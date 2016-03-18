@@ -47,6 +47,19 @@
 #     everything else gets an ordinal of `33`.  This will usually get the
 #     ordering correct, but you may need to occasionally fiddle with this.
 #
+#  * `v4_only` (boolean; optional; default `false`)
+#
+#     Specify that this firewall rule is *only* to be defined for IPv4.
+#     This sort of thing is usually determined heuristically, but there are
+#     some cases where you want to be explicit about it.  Note that setting
+#     this attribute overrides the normal heuristics, so you can end up
+#     assploding shorewall if you (for example) use IPv6 addresses in a rule
+#     marked `v4_only`.  So be careful.
+#
+#  * `v6_only` (boolean; optional; default `false`)
+#
+#     The IPv6 equivalent of `v4_only`.
+#
 define shorewall::policy(
 		$source,
 		$dest,
@@ -54,14 +67,18 @@ define shorewall::policy(
 		$reciprocal = false,
 		$log        = undef,
 		$ordinal    = undef,
+		$v4_only    = false,
+		$v6_only    = false,
 ) {
 	if $reciprocal {
 		shorewall::policy { "${name} -- reciprocal":
-			source  => $dest,
-			dest    => $source,
-			policy  => $policy,
-			log     => $log,
-			ordinal => $ordinal,
+			source    => $dest,
+			dest      => $source,
+			policy    => $policy,
+			log       => $log,
+			ordinal   => $ordinal,
+			$v4_only  => false,
+			$v6_only  => false,
 		}
 	}
 
@@ -77,11 +94,16 @@ define shorewall::policy(
 		$_ordinal = $ordinal
 	}
 
-	bitfile::bit {
+if $v4 {
+	itfile::bit {
 		"shorewall::policy ${name}":
 			path    => "/etc/shorewall/policy",
 			content => "$source $dest $policy $log",
 			ordinal => $_ordinal;
+	}
+
+if $v6 {
+	bitfile::bit {
 		"shorewall6::policy ${name}":
 			path    => "/etc/shorewall6/policy",
 			content => "$source $dest $policy $log",
