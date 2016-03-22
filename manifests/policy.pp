@@ -67,8 +67,8 @@ define shorewall::policy(
 		$reciprocal = false,
 		$log        = undef,
 		$ordinal    = undef,
-		$v4_only    = false,
-		$v6_only    = false,
+		$v4         = true,
+		$v6         = true,
 ) {
 	if $reciprocal {
 		shorewall::policy { "${name} -- reciprocal":
@@ -77,8 +77,8 @@ define shorewall::policy(
 			policy    => $policy,
 			log       => $log,
 			ordinal   => $ordinal,
-			$v4_only  => false,
-			$v6_only  => false,
+			v4        => $v4,
+			v6        => $v6,
 		}
 	}
 
@@ -94,19 +94,21 @@ define shorewall::policy(
 		$_ordinal = $ordinal
 	}
 
-if $v4 {
-	itfile::bit {
-		"shorewall::policy ${name}":
-			path    => "/etc/shorewall/policy",
-			content => "$source $dest $policy $log",
-			ordinal => $_ordinal;
+	if $v4 {
+		bitfile::bit {
+			"shorewall::policy ${name}":
+				path    => "/etc/shorewall/policy",
+				content => "$source $dest $policy $log",
+				ordinal => $_ordinal;
+		}
 	}
 
-if $v6 {
-	bitfile::bit {
-		"shorewall6::policy ${name}":
-			path    => "/etc/shorewall6/policy",
-			content => "$source $dest $policy $log",
-			ordinal => $_ordinal;
+	if $v6 {
+		bitfile::bit {
+			"shorewall6::policy ${name}":
+				path    => "/etc/shorewall6/policy",
+				content => "$source $dest $policy $log",
+				ordinal => $_ordinal;
+		}
 	}
 }
