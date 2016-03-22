@@ -13,7 +13,9 @@
 #     of a firewall.
 #
 class shorewall(
-		$v4_only = false
+		$v4_only = false,
+		$v4_log  = 'info',
+		$v6_log  = 'info'
 ) {
 	noop {
 		"shorewall/installed": ;
@@ -213,11 +215,20 @@ class shorewall(
 		}
 	}
 
-	shorewall::policy { "default reject-all-by-default":
+	shorewall::policy { "default IPv4 reject-all-by-default":
 		source => "all",
 		dest   => "all",
 		policy => "REJECT",
-		log    => "info",
+		log    => $v4_log,
+		v6     => false
+	}
+
+	shorewall::policy { "default IPv6 reject-all-by-default":
+		source => "all",
+		dest   => "all",
+		policy => "REJECT",
+		log    => $v6_log,
+		v4     => false
 	}
 
 	bitfile::bit {
